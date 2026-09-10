@@ -1,0 +1,28 @@
+# 依赖
+node_modules/
+
+# 构建产物
+frontend/dist/
+
+# 环境变量与敏感配置（严禁提交）
+.env
+.env.*
+
+# 本地数据库文件
+data/*.db
+data/*.db-shm
+data/*.db-wal
+*.db
+*.db-shm
+*.db-wal
+
+# 日志
+*.log
+logs/
+
+# 系统与编辑器
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
