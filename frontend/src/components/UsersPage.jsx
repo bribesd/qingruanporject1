@@ -20,6 +20,10 @@ export default function UsersPage({ user: currentUser, canWrite }) {
   const [editingId, setEditingId] = useState(null)
   const [form, setForm] = useState(emptyForm)
   const [saving, setSaving] = useState(false)
+  const canManageRoles = currentUser?.role === 'super_admin'
+  const editingUser = users.find((u) => u.id === editingId)
+  const canEditSensitiveFields =
+    canManageRoles && (!editingUser || editingUser.role !== 'super_admin' || editingUser.id === currentUser.id)
 
   const load = useCallback(async () => {
     const [userList, roleList] = await Promise.all([api.get('/api/users'), api.get('/api/roles')])
@@ -71,8 +75,10 @@ export default function UsersPage({ user: currentUser, canWrite }) {
       const payload = {
         realName: form.realName,
         email: form.email,
-        roleId: form.roleId ? Number(form.roleId) : null,
         status: form.status,
+      }
+      if (canManageRoles) {
+        payload.roleId = form.roleId ? Number(form.roleId) : null
       }
       if (editingId) {
         await api.put(`/api/users/${editingId}`, payload)
@@ -146,9 +152,11 @@ export default function UsersPage({ user: currentUser, canWrite }) {
                     <button type="button" className="link-btn" onClick={() => openEdit(u)}>
                       编辑
                     </button>
-                    <button type="button" className="link-btn danger" onClick={() => handleDelete(u)}>
-                      删除
-                    </button>
+                    {u.role !== 'super_admin' && (
+                      <button type="button" className="link-btn danger" onClick={() => handleDelete(u)}>
+                        删除
+                      </button>
+                    )}
                   </>
                 )}
               </td>
@@ -216,7 +224,12 @@ export default function UsersPage({ user: currentUser, canWrite }) {
               <div className="two-col">
                 <label>
                   <span>角色</span>
-                  <select name="roleId" value={form.roleId} onChange={handleChange}>
+                  <select
+                    name="roleId"
+                    value={form.roleId}
+                    onChange={handleChange}
+                    disabled={!canEditSensitiveFields}
+                  >
                     <option value="">请选择角色</option>
                     {roles.map((r) => (
                       <option key={r.id} value={r.id}>
@@ -227,7 +240,12 @@ export default function UsersPage({ user: currentUser, canWrite }) {
                 </label>
                 <label>
                   <span>状态</span>
-                  <select name="status" value={form.status} onChange={handleChange}>
+                  <select
+                    name="status"
+                    value={form.status}
+                    onChange={handleChange}
+                    disabled={!canEditSensitiveFields}
+                  >
                     <option value="active">启用</option>
                     <option value="disabled">禁用</option>
                   </select>

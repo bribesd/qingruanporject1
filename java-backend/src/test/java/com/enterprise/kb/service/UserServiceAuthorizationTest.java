@@ -18,20 +18,21 @@ class UserServiceAuthorizationTest {
     private final AuthUser admin = new AuthUser(2L, "admin-user", "admin", "active");
 
     @Test
-    void adminCannotCreateUsers() {
+    void adminMustProvideValidCreateData() {
         ApiException error = assertThrows(ApiException.class, () -> userService.create(Map.of(), admin));
+        assertEquals(400, error.getStatus());
+    }
+
+    @Test
+    void adminCannotModifyUserRole() {
+        ApiException error = assertThrows(ApiException.class,
+                () -> userService.update(1L, Map.of("roleId", 1), admin));
         assertEquals(403, error.getStatus());
     }
 
     @Test
-    void adminCannotModifyUsers() {
-        ApiException error = assertThrows(ApiException.class, () -> userService.update(1L, Map.of(), admin));
-        assertEquals(403, error.getStatus());
-    }
-
-    @Test
-    void adminCannotDeleteUsers() {
+    void adminGetsNotFoundWhenDeletingMissingUser() {
         ApiException error = assertThrows(ApiException.class, () -> userService.delete(1L, admin));
-        assertEquals(403, error.getStatus());
+        assertEquals(404, error.getStatus());
     }
 }

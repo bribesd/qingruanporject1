@@ -28,27 +28,26 @@ class UserManagementEndpointAuthorizationTest {
     }
 
     @Test
-    void adminIsDeniedOnCreateUserEndpoint() throws Exception {
-        assertDenied("create", Map.class);
+    void adminCanAccessCreateUserEndpoint() throws Exception {
+        assertAllowed("create", Map.class);
     }
 
     @Test
-    void adminIsDeniedOnUpdateUserEndpoint() throws Exception {
-        assertDenied("update", long.class, Map.class);
+    void adminCanAccessUpdateUserEndpoint() throws Exception {
+        assertAllowed("update", long.class, Map.class);
     }
 
     @Test
-    void adminIsDeniedOnDeleteUserEndpoint() throws Exception {
-        assertDenied("delete", long.class);
+    void adminCanAccessDeleteUserEndpoint() throws Exception {
+        assertAllowed("delete", long.class);
     }
 
-    private void assertDenied(String methodName, Class<?>... parameterTypes) throws Exception {
+    private void assertAllowed(String methodName, Class<?>... parameterTypes) throws Exception {
         UserContext.set(new AuthUser(2L, "ordinary-admin", "admin", "active"));
         HandlerMethod handler = new HandlerMethod(controller,
                 UserController.class.getMethod(methodName, parameterTypes));
 
-        ApiException error = assertThrows(ApiException.class,
-                () -> interceptor.preHandle(request, response, handler));
-        assertEquals(403, error.getStatus());
+        boolean allowed = interceptor.preHandle(request, response, handler);
+        assertEquals(true, allowed);
     }
 }

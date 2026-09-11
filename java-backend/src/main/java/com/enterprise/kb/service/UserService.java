@@ -28,9 +28,24 @@ public class UserService {
         this.auditLogger = auditLogger;
     }
 
-    private void requireSuperAdmin(AuthUser currentUser) {
-        if (currentUser == null || !currentUser.isSuperAdmin()) {
-            throw new ApiException(403, "Only super administrators may manage user accounts");
+    private void requireAdmin(AuthUser currentUser) {
+        if (currentUser == null || !currentUser.isAdmin()) {
+            throw new ApiException(403, "只有管理员可以管理用户账号");
+        }
+    }
+
+    private long roleId(String roleName) {
+        Long id = jdbcTemplate.queryForObject(
+                "SELECT id FROM roles WHERE name = ?", Long.class, roleName);
+        if (id == null) {
+            throw new ApiException(500, "系统角色配置异常");
+        }
+        return id;
+    }
+
+    private void requireValidStatus(Object value) {
+        if (value != null && !List.of("active", "disabled").contains(String.valueOf(value))) {
+            throw new ApiException(400, "用户状态无效");
         }
     }
 
@@ -47,7 +62,7 @@ public class UserService {
     }
 
     public long create(Map<String, Object> body, AuthUser currentUser) {
-        requireSuperAdmin(currentUser);
+        requireAdmin(currentUser);
         String username = Str.orEmpty(body.get("username"));
         String password = Str.orEmpty(body.get("password"));
         if (username.isEmpty() || password.isEmpty()) {
@@ -64,10 +79,19 @@ public class UserService {
         String realName = Str.orEmpty(body.get("realName"));
         String email = Str.orEmpty(body.get("email"));
         Long roleId = Str.jsLong(body.get("roleId"));
-        if (roleId == null) {
-            roleId = 2L;
+        long userRoleId = roleId("user");
+        if (!currentUser.isSuperAdmin()) {
+            roleId = userRoleId;
+        } else if (roleId == null) {
+            roleId = userRoleId;
+        }
+        Integer roleExists = jdbcTemplate.queryForObject(
+            "SELECT COUNT(*) FROM roles WHERE id = ?", Integer.class, roleId);
+        if (roleExists == null || roleExists == 0) {
+            throw new ApiException(400, "用户角色无效");
         }
         String status = body.get("status") == null ? "active" : String.valueOf(body.get("status"));
+        requireValidStatus(status);
 
         long id = Jdbc.insertReturningKey(jdbcTemplate,
                 "INSERT INTO users (username, password, real_name, email, role_id, status) VALUES (?, ?, ?, ?, ?, ?)",
@@ -78,23 +102,45 @@ public class UserService {
     }
 
     public void update(long id, Map<String, Object> body, AuthUser currentUser) {
-        requireSuperAdmin(currentUser);
+        requireAdmin(currentUser);
         Long roleId = Str.jsLong(body.get("roleId"));
+        requireValidStatus(body.get("status"));
+
+        if (!currentUser.isSuperAdmin() && roleId != null) {
+            throw new ApiException(403, "普通管理员不能修改用户角色");
+        }
+
+        List<Map<String, Object>> targets = jdbcTemplate.queryForList(
+                "SELECT id, role_id, status FROM users WHERE id = ?", id);
+        if (targets.isEmpty()) {
+            throw new ApiException(404, "用户不存在");
+        }
+
+        long superAdminRoleId = roleId("super_admin");
+        long targetRoleId = ((Number) targets.get(0).get("role_id")).longValue();
+        boolean targetIsSuperAdmin = targetRoleId == superAdminRoleId;
+        boolean selfUpdate = id == currentUser.id();
+
+        if (targetIsSuperAdmin && !selfUpdate && (roleId != null || body.get("status") != null)) {
+            throw new ApiException(403, "不能修改其他超级管理员的角色或状态");
+        }
+        if (roleId != null) {
+            Integer roleExists = jdbcTemplate.queryForObject(
+                    "SELECT COUNT(*) FROM roles WHERE id = ?", Integer.class, roleId);
+            if (roleExists == null || roleExists == 0) {
+                throw new ApiException(400, "用户角色无效");
+            }
+        }
+        if (selfUpdate && currentUser.isSuperAdmin() && "disabled".equals(body.get("status"))) {
+            throw new ApiException(400, "不能禁用当前登录的超级管理员");
+        }
 
         if (roleId != null) {
-            List<Map<String, Object>> targets = jdbcTemplate.queryForList(
-                    "SELECT id, role_id FROM users WHERE id = ?", id);
-            List<Map<String, Object>> superRoles = jdbcTemplate.queryForList(
-                    "SELECT id FROM roles WHERE name = 'super_admin'");
-            if (!targets.isEmpty() && !superRoles.isEmpty()) {
-                long superAdminId = ((Number) superRoles.get(0).get("id")).longValue();
-                long targetRoleId = ((Number) targets.get(0).get("role_id")).longValue();
-                if (targetRoleId == superAdminId && roleId != superAdminId) {
-                    Long superCount = jdbcTemplate.queryForObject(
-                            "SELECT COUNT(*) FROM users WHERE role_id = ?", Long.class, superAdminId);
-                    if (superCount != null && superCount <= 1) {
-                        throw new ApiException(400, "至少需要保留一个超级管理员，无法降级");
-                    }
+            if (targetIsSuperAdmin && roleId != superAdminRoleId) {
+                Long superCount = jdbcTemplate.queryForObject(
+                        "SELECT COUNT(*) FROM users WHERE role_id = ?", Long.class, superAdminRoleId);
+                if (superCount != null && superCount <= 1) {
+                    throw new ApiException(400, "至少需要保留一个超级管理员，无法降级");
                 }
             }
         }
@@ -110,7 +156,7 @@ public class UserService {
 
     @Transactional
     public void delete(long id, AuthUser currentUser) {
-        requireSuperAdmin(currentUser);
+        requireAdmin(currentUser);
         if (id <= 0 || id == currentUser.id()) {
             throw new ApiException(400, "不能删除当前登录的账号");
         }
@@ -121,18 +167,10 @@ public class UserService {
             throw new ApiException(404, "用户不存在");
         }
 
-        List<Map<String, Object>> superRoles = jdbcTemplate.queryForList(
-                "SELECT id FROM roles WHERE name = 'super_admin'");
-        if (!superRoles.isEmpty()) {
-            long superAdminId = ((Number) superRoles.get(0).get("id")).longValue();
-            long targetRoleId = ((Number) targets.get(0).get("role_id")).longValue();
-            if (targetRoleId == superAdminId) {
-                Long superCount = jdbcTemplate.queryForObject(
-                        "SELECT COUNT(*) FROM users WHERE role_id = ?", Long.class, superAdminId);
-                if (superCount != null && superCount <= 1) {
-                    throw new ApiException(400, "至少需要保留一个超级管理员，无法删除");
-                }
-            }
+        long superAdminId = roleId("super_admin");
+        long targetRoleId = ((Number) targets.get(0).get("role_id")).longValue();
+        if (targetRoleId == superAdminId) {
+            throw new ApiException(403, "不能删除超级管理员账号");
         }
 
         try {

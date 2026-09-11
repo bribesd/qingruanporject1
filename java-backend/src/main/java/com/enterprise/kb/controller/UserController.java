@@ -1,7 +1,6 @@
 package com.enterprise.kb.controller;
 
 import com.enterprise.kb.security.RequireAdmin;
-import com.enterprise.kb.security.RequireSuperAdmin;
 import com.enterprise.kb.security.UserContext;
 import com.enterprise.kb.service.UserService;
 import com.enterprise.kb.util.Pagination;
@@ -43,7 +42,7 @@ public class UserController {
     }
 
     @PostMapping
-    @RequireSuperAdmin
+    @RequireAdmin
     public ResponseEntity<Map<String, Object>> create(@RequestBody Map<String, Object> body) {
         long id = userService.create(body, UserContext.get());
         Map<String, Object> resp = new LinkedHashMap<>();
@@ -53,14 +52,14 @@ public class UserController {
     }
 
     @PutMapping("/{id}")
-    @RequireSuperAdmin
+    @RequireAdmin
     public Map<String, Object> update(@PathVariable long id, @RequestBody Map<String, Object> body) {
         userService.update(id, body, UserContext.get());
         return Map.of("message", "用户更新成功");
     }
 
     @DeleteMapping("/{id}")
-    @RequireSuperAdmin
+    @RequireAdmin
     public Map<String, Object> delete(@PathVariable long id) {
         userService.delete(id, UserContext.get());
         return Map.of("message", "用户删除成功");

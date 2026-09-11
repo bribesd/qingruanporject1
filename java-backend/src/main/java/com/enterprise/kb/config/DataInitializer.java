@@ -39,6 +39,7 @@ public class DataInitializer implements ApplicationRunner {
         seedRoles();
         seedAdmin();
         seedCategories();
+        seedKnowledge();
     }
 
     private void seedRoles() {
@@ -82,6 +83,43 @@ public class DataInitializer implements ApplicationRunner {
             if (c == null || c == 0) {
                 jdbcTemplate.update("INSERT INTO categories (name) VALUES (?)", name);
             }
+        }
+    }
+
+    private void seedKnowledge() {
+        List<Long> adminIds = jdbcTemplate.queryForList(
+                "SELECT id FROM users WHERE username = ?", Long.class, adminUsername);
+        if (adminIds.isEmpty()) {
+            throw new IllegalStateException("Bootstrap administrator not found: " + adminUsername);
+        }
+        long adminId = adminIds.get(0);
+
+        Object[][] seed = {
+                {"员工考勤管理制度", "公司制度", "员工应按规定打卡考勤，因故迟到、早退或请假须提前办理审批手续。"},
+                {"产品试用申请说明", "产品说明", "试用产品前请填写申请信息并说明使用目的，审核通过后即可获得试用权限。"},
+                {"密码安全配置规范", "技术文档", "密码应设置为高强度组合并定期更换，不得与他人共享或重复使用。"},
+                {"如何申请账号权限？", "FAQ", "请通过权限申请入口提交账号、所需权限及申请理由，经负责人审批后开通。"},
+                {"客户问题处理流程", "流程规范", "客户问题应及时登记、分类、分派并跟进处理，完成后确认结果并记录归档。"}
+        };
+
+        for (Object[] item : seed) {
+            String title = (String) item[0];
+            String categoryName = (String) item[1];
+            String content = (String) item[2];
+            Integer exists = jdbcTemplate.queryForObject(
+                    "SELECT COUNT(*) FROM knowledge_items WHERE title = ?", Integer.class, title);
+            if (exists != null && exists > 0) {
+                continue;
+            }
+
+            List<Long> categoryIds = jdbcTemplate.queryForList(
+                    "SELECT id FROM categories WHERE name = ?", Long.class, categoryName);
+            if (categoryIds.isEmpty()) {
+                continue;
+            }
+            jdbcTemplate.update(
+                    "INSERT INTO knowledge_items (title, content, category_id, author_id, status) VALUES (?, ?, ?, ?, ?)",
+                    title, content, categoryIds.get(0), adminId, "published");
         }
     }
 
