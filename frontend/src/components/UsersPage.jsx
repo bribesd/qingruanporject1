@@ -16,6 +16,9 @@ export default function UsersPage({ user: currentUser, canWrite }) {
   const [users, setUsers] = useState([])
   const [roles, setRoles] = useState([])
   const [loading, setLoading] = useState(true)
+  if (!canWrite) {
+    return <p style={{ color: '#64748b' }}>无权限查看用户列表</p>
+  }
   const [showForm, setShowForm] = useState(false)
   const [editingId, setEditingId] = useState(null)
   const [form, setForm] = useState(emptyForm)

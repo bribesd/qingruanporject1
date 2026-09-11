@@ -117,10 +117,15 @@ public class UserService {
         }
 
         long superAdminRoleId = roleId("super_admin");
+        long adminRoleId = roleId("admin");
         long targetRoleId = ((Number) targets.get(0).get("role_id")).longValue();
         boolean targetIsSuperAdmin = targetRoleId == superAdminRoleId;
+        boolean targetIsAdmin = targetRoleId == adminRoleId;
         boolean selfUpdate = id == currentUser.id();
 
+        if (!currentUser.isSuperAdmin() && !selfUpdate && targetIsAdmin && (roleId != null || body.get("status") != null)) {
+            throw new ApiException(403, "普通管理员不能修改管理员账号的角色或状态");
+        }
         if (targetIsSuperAdmin && !selfUpdate && (roleId != null || body.get("status") != null)) {
             throw new ApiException(403, "不能修改其他超级管理员的角色或状态");
         }
@@ -168,9 +173,13 @@ public class UserService {
         }
 
         long superAdminId = roleId("super_admin");
+        long adminId = roleId("admin");
         long targetRoleId = ((Number) targets.get(0).get("role_id")).longValue();
         if (targetRoleId == superAdminId) {
             throw new ApiException(403, "不能删除超级管理员账号");
+        }
+        if (!currentUser.isSuperAdmin() && targetRoleId == adminId) {
+            throw new ApiException(403, "普通管理员不能删除管理员账号");
         }
 
         try {

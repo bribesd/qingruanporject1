@@ -78,6 +78,21 @@ function App() {
     }
   }
 
+  const page = PAGES[activePage]
+  const canWrite = ['super_admin', 'admin'].includes(currentUser?.role)
+  const canManageUsers = canWrite
+  const visibleNavItems = NAV_ITEMS.filter((item) => item.key !== 'users' || canManageUsers)
+
+  useEffect(() => {
+    if (activePage === 'users' && !canManageUsers) {
+      setActivePage('dashboard')
+    }
+  }, [activePage, canManageUsers])
+
+  const displayName = currentUser
+    ? currentUser.realName || currentUser.username
+    : username || '管理员'
+
   if (!loggedIn) {
     return (
       <div className="login-page">
@@ -125,12 +140,6 @@ function App() {
     )
   }
 
-  const page = PAGES[activePage]
-  const canWrite = ['super_admin', 'admin'].includes(currentUser?.role)
-  const displayName = currentUser
-    ? currentUser.realName || currentUser.username
-    : username || '管理员'
-
   return (
     <div className="admin-shell">
       <aside className="sidebar">
@@ -144,7 +153,7 @@ function App() {
 
         <nav className="nav">
           <p className="nav-title">菜单</p>
-          {NAV_ITEMS.map((item) => (
+          {visibleNavItems.map((item) => (
             <button
               key={item.key}
               className={activePage === item.key ? 'nav-btn active' : 'nav-btn'}
@@ -170,7 +179,7 @@ function App() {
 
         {activePage === 'dashboard' && <Dashboard onNavigate={setActivePage} />}
         {activePage === 'knowledge' && <KnowledgePage canWrite={canWrite} />}
-        {activePage === 'users' && <UsersPage user={currentUser} canWrite={canWrite} />}
+        {activePage === 'users' && canManageUsers && <UsersPage user={currentUser} canWrite={canWrite} />}
         {activePage === 'categories' && <CategoriesPage canWrite={canWrite} />}
         {activePage === 'questions' && <QuestionsPage canWrite={canWrite} />}
         {activePage === 'logs' && <AuditLogsPage />}
