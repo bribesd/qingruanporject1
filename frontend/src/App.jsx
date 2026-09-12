@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import './App.css'
 import { api, setToken } from './api'
+import { roleLabel } from './shared'
 import Dashboard from './components/Dashboard'
 import KnowledgePage from './components/KnowledgePage'
 import UsersPage from './components/UsersPage'
@@ -81,13 +82,21 @@ function App() {
   const page = PAGES[activePage]
   const canWrite = ['super_admin', 'admin'].includes(currentUser?.role)
   const canManageUsers = canWrite
-  const visibleNavItems = NAV_ITEMS.filter((item) => item.key !== 'users' || canManageUsers)
+  const canViewLogs = canWrite
+  const visibleNavItems = NAV_ITEMS.filter((item) => {
+    if (item.key === 'users') return canManageUsers
+    if (item.key === 'logs') return canViewLogs
+    return true
+  })
 
   useEffect(() => {
-    if (activePage === 'users' && !canManageUsers) {
+    if (
+      (activePage === 'users' && !canManageUsers) ||
+      (activePage === 'logs' && !canViewLogs)
+    ) {
       setActivePage('dashboard')
     }
-  }, [activePage, canManageUsers])
+  }, [activePage, canManageUsers, canViewLogs])
 
   const displayName = currentUser
     ? currentUser.realName || currentUser.username
@@ -174,7 +183,7 @@ function App() {
             <h1>{page.title}</h1>
             <p>{page.subtitle}</p>
           </div>
-          <div className="user-pill">管理员 · {displayName}</div>
+          <div className="user-pill">{roleLabel(currentUser?.role)} · {displayName}</div>
         </header>
 
         {activePage === 'dashboard' && <Dashboard onNavigate={setActivePage} />}

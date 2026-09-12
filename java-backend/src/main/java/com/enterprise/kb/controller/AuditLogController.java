@@ -1,6 +1,6 @@
 package com.enterprise.kb.controller;
 
-import com.enterprise.kb.security.RequireSuperAdmin;
+import com.enterprise.kb.security.RequireAdmin;
 import com.enterprise.kb.service.AuditLogService;
 import com.enterprise.kb.util.Pagination;
 import org.springframework.http.ResponseEntity;
@@ -23,7 +23,7 @@ public class AuditLogController {
     }
 
     @GetMapping
-    @RequireSuperAdmin
+    @RequireAdmin
     public ResponseEntity<List<Map<String, Object>>> list(
             @RequestParam(required = false) String limit,
             @RequestParam(required = false) String offset) {

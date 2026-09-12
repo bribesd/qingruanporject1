@@ -45,7 +45,6 @@ public class QuestionController {
     }
 
     @PostMapping
-    @RequireAdmin
     public ResponseEntity<Map<String, Object>> create(@RequestBody Map<String, Object> body) {
         long id = questionService.create(body, UserContext.get());
         Map<String, Object> resp = new LinkedHashMap<>();

@@ -9,6 +9,10 @@ export default function QuestionsPage({ canWrite }) {
   const [detail, setDetail] = useState(null)
   const [answer, setAnswer] = useState('')
   const [saving, setSaving] = useState(false)
+  const [showAsk, setShowAsk] = useState(false)
+  const [askTitle, setAskTitle] = useState('')
+  const [askContent, setAskContent] = useState('')
+  const [asking, setAsking] = useState(false)
 
   const load = useCallback(async () => {
     setQuestions((await api.get('/api/questions')) || [])
@@ -59,6 +63,25 @@ export default function QuestionsPage({ canWrite }) {
     }
   }
 
+  async function submitQuestion() {
+    if (!askTitle.trim() || !askContent.trim()) {
+      alert('问题标题和内容不能为空')
+      return
+    }
+    setAsking(true)
+    try {
+      await api.post('/api/questions', { title: askTitle.trim(), content: askContent.trim() })
+      setAskTitle('')
+      setAskContent('')
+      setShowAsk(false)
+      await load()
+    } catch (err) {
+      if (err.status !== 401) alert(err.message)
+    } finally {
+      setAsking(false)
+    }
+  }
+
   if (loading) {
     return <p style={{ color: '#64748b' }}>加载中…</p>
   }
@@ -68,6 +91,9 @@ export default function QuestionsPage({ canWrite }) {
       <section className="panel">
         <div className="panel-header">
           <h3>问题列表（{questions.length}）</h3>
+          <button type="button" onClick={() => setShowAsk((v) => !v)}>
+            {showAsk ? '收起提问' : '新建提问'}
+          </button>
         </div>
 
         <table className="data-table">
@@ -101,6 +127,41 @@ export default function QuestionsPage({ canWrite }) {
           </tbody>
         </table>
       </section>
+
+      {showAsk && (
+        <section className="panel" style={{ marginBottom: 22 }}>
+          <div className="panel-header">
+            <h3>新建提问</h3>
+          </div>
+          <div className="knowledge-form">
+            <label>
+              <span>问题标题</span>
+              <input
+                value={askTitle}
+                onChange={(e) => setAskTitle(e.target.value)}
+                placeholder="请输入问题标题"
+              />
+            </label>
+            <label>
+              <span>问题描述</span>
+              <textarea
+                value={askContent}
+                onChange={(e) => setAskContent(e.target.value)}
+                rows="4"
+                placeholder="请描述你的问题"
+              />
+            </label>
+            <div className="form-actions">
+              <button type="button" className="secondary-btn" onClick={() => setShowAsk(false)}>
+                取消
+              </button>
+              <button type="button" className="primary-btn" disabled={asking} onClick={submitQuestion}>
+                {asking ? '提交中…' : '提交问题'}
+              </button>
+            </div>
+          </div>
+        </section>
+      )}
 
       {detail && (
         <div className="modal-overlay" onClick={() => setDetail(null)}>
