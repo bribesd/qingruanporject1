@@ -3,6 +3,8 @@ import './App.css'
 import { api, setToken } from './api'
 import { roleLabel } from './shared'
 import Dashboard from './components/Dashboard'
+import AiChatPage from './components/AiChatPage'
+import SearchPage from './components/SearchPage'
 import KnowledgePage from './components/KnowledgePage'
 import UsersPage from './components/UsersPage'
 import CategoriesPage from './components/CategoriesPage'
@@ -11,6 +13,8 @@ import AuditLogsPage from './components/AuditLogsPage'
 
 const PAGES = {
   dashboard: { title: '智能企业知识库管理与问答平台', subtitle: '后台管理中心' },
+  ai: { title: 'AI 智能问答', subtitle: '基于知识库内容的语义问答，回答附引用来源' },
+  search: { title: '语义搜索', subtitle: '按向量相似度检索知识并高亮关键词' },
   knowledge: { title: '知识管理', subtitle: '维护企业知识库内容与状态' },
   users: { title: '用户管理', subtitle: '管理系统账号与权限' },
   categories: { title: '分类管理', subtitle: '维护知识分类结构' },
@@ -20,6 +24,8 @@ const PAGES = {
 
 const NAV_ITEMS = [
   { key: 'dashboard', label: '首页' },
+  { key: 'ai', label: 'AI 问答' },
+  { key: 'search', label: '语义搜索' },
   { key: 'knowledge', label: '知识管理' },
   { key: 'users', label: '用户管理' },
   { key: 'categories', label: '分类管理' },
@@ -187,6 +193,8 @@ function App() {
         </header>
 
         {activePage === 'dashboard' && <Dashboard onNavigate={setActivePage} />}
+        {activePage === 'ai' && <AiChatPage />}
+        {activePage === 'search' && <SearchPage />}
         {activePage === 'knowledge' && <KnowledgePage canWrite={canWrite} />}
         {activePage === 'users' && canManageUsers && <UsersPage user={currentUser} canWrite={canWrite} />}
         {activePage === 'categories' && <CategoriesPage canWrite={canWrite} />}

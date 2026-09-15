@@ -39,6 +39,16 @@ CREATE TABLE IF NOT EXISTS knowledge_items (
     FOREIGN KEY (author_id) REFERENCES users (id)
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4;
 
+-- 知识条目切分后的文本片段（向量本身存于 Chroma，此处保存原文便于重建索引）
+CREATE TABLE IF NOT EXISTS knowledge_chunks (
+    id           INT AUTO_INCREMENT PRIMARY KEY,
+    knowledge_id INT NOT NULL,
+    chunk_index  INT NOT NULL,
+    content      MEDIUMTEXT NOT NULL,
+    created_at   DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (knowledge_id) REFERENCES knowledge_items (id) ON DELETE CASCADE
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4;
+
 CREATE TABLE IF NOT EXISTS questions (
     id         INT AUTO_INCREMENT PRIMARY KEY,
     user_id    INT,

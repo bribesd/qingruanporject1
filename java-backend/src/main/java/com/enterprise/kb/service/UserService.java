@@ -35,12 +35,12 @@ public class UserService {
     }
 
     private long roleId(String roleName) {
-        Long id = jdbcTemplate.queryForObject(
+        List<Long> ids = jdbcTemplate.queryForList(
                 "SELECT id FROM roles WHERE name = ?", Long.class, roleName);
-        if (id == null) {
+        if (ids.isEmpty()) {
             throw new ApiException(500, "系统角色配置异常");
         }
-        return id;
+        return ids.get(0);
     }
 
     private void requireValidStatus(Object value) {

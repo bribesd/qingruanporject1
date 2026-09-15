@@ -62,19 +62,6 @@ public class DataInitializer implements ApplicationRunner {
         }
     }
 
-    @Deprecated(forRemoval = true)
-    private void seedLegacyAdmin() {
-        Integer c = jdbcTemplate.queryForObject(
-                "SELECT COUNT(*) FROM users WHERE username = ?", Integer.class, "admin");
-        if (c == null || c == 0) {
-            Long adminRoleId = roleId("super_admin");
-            String hash = passwordEncoder.encode(adminPassword);
-            jdbcTemplate.update(
-                    "INSERT INTO users (username, password, real_name, email, role_id, status) VALUES (?, ?, ?, ?, ?, ?)",
-                    "admin", hash, "系统管理员", "admin@company.com", adminRoleId, "active");
-        }
-    }
-
     private void seedCategories() {
         String[] names = {"公司制度", "产品说明", "技术文档", "FAQ", "流程规范"};
         for (String name : names) {
@@ -125,35 +112,6 @@ public class DataInitializer implements ApplicationRunner {
             jdbcTemplate.update(
                     "INSERT INTO knowledge_items (title, content, category_id, author_id, status) VALUES (?, ?, ?, ?, ?)",
                     title, content, categoryIds.get(0), adminId, "published");
-        }
-    }
-
-    private void seedTestUsers() {
-        Object[][] seed = {
-                {"testuser", "test123", "测试用户", "user"},
-                {"zhangsan", "test123", "张三", "user"},
-                {"lisi", "test123", "李四", "admin"},
-                {"wangwu", "test123", "王五", "user"},
-                {"zhaoliu", "test123", "赵六", "admin"},
-        };
-        for (Object[] u : seed) {
-            String username = (String) u[0];
-            String password = (String) u[1];
-            String realName = (String) u[2];
-            String roleName = (String) u[3];
-
-            Long roleId = roleId(roleName);
-            if (roleId == null) {
-                continue;
-            }
-            Integer c = jdbcTemplate.queryForObject(
-                    "SELECT COUNT(*) FROM users WHERE username = ?", Integer.class, username);
-            if (c == null || c == 0) {
-                String hash = passwordEncoder.encode(password);
-                jdbcTemplate.update(
-                        "INSERT INTO users (username, password, real_name, email, role_id, status) VALUES (?, ?, ?, ?, ?, 'active')",
-                        username, hash, realName, username + "@company.com", roleId);
-            }
         }
     }
 

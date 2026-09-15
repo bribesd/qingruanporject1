@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #ffffff; font-family: "Microsoft YaHei", "SimHei", sans-serif; }
+  .container { padding: 30px; }
+  h2 { font-size: 24px; color: #1f2937; text-align: center; margin-bottom: 16px; }
+  .center-node { fill: #1e40af; stroke: #1e3a8a; stroke-width: 2.5; rx: 14; ry: 14; }
+  .center-text { font-size: 18px; fill: #ffffff; text-anchor: middle; font-weight: bold; }
+  .branch-node { stroke-width: 2; rx: 10; ry: 10; }
+  .branch-text { font-size: 15px; fill: #ffffff; text-anchor: middle; font-weight: bold; }
+  .leaf-node { fill: #ffffff; stroke-width: 1.8; rx: 7; ry: 7; }
+  .leaf-text { font-size: 12.5px; fill: #1f2937; text-anchor: start; }
+  .link { stroke-width: 2.2; fill: none; }
+</style>
+</head>
+<body>
+<div class="container">
+  <h2>智能企业知识库管理与问答平台 · 项目思维导图</h2>
+  <svg viewBox="0 0 1600 1180" xmlns="http://www.w3.org/2000/svg">
+
+    <rect class="center-node" x="60" y="520" width="220" height="80"/>
+    <text class="center-text" x="170" y="555">智能企业知识库</text>
+    <text class="center-text" x="170" y="580">管理与问答平台</text>
+
+    <!-- 分支1：技术架构 -->
+    <path class="link" stroke="#7c3aed" d="M 280 540 C 380 540, 380 120, 480 120"/>
+    <rect class="branch-node" x="480" y="92" width="160" height="56" fill="#7c3aed" stroke="#6d28d9"/>
+    <text class="branch-text" x="560" y="125">技术架构</text>
+    <g>
+      <path class="link" stroke="#a78bfa" d="M 640 110 C 700 110, 700 60, 760 60"/>
+      <rect class="leaf-node" x="760" y="38" width="340" height="44" stroke="#a78bfa"/>
+      <text class="leaf-text" x="772" y="65">后端：Java 17 / Spring Boot 3.3.5 / Spring JDBC</text>
+      <path class="link" stroke="#a78bfa" d="M 640 120 C 700 120, 700 120, 760 120"/>
+      <rect class="leaf-node" x="760" y="98" width="340" height="44" stroke="#a78bfa"/>
+      <text class="leaf-text" x="772" y="125">前端：React 19 / Vite 8</text>
+      <path class="link" stroke="#a78bfa" d="M 640 130 C 700 130, 700 180, 760 180"/>
+      <rect class="leaf-node" x="760" y="158" width="340" height="44" stroke="#a78bfa"/>
+      <text class="leaf-text" x="772" y="185">数据库：MySQL 8.0（InnoDB / utf8mb4）</text>
+      <path class="link" stroke="#a78bfa" d="M 640 140 C 700 140, 700 240, 760 240"/>
+      <rect class="leaf-node" x="760" y="218" width="340" height="44" stroke="#a78bfa"/>
+      <text class="leaf-text" x="772" y="245">接口：RESTful / 后端 3001 · 前端 5173</text>
+    </g>
+
+    <!-- 分支2：功能模块 -->
+    <path class="link" stroke="#0891b2" d="M 280 550 C 380 550, 380 340, 480 340"/>
+    <rect class="branch-node" x="480" y="312" width="160" height="56" fill="#0891b2" stroke="#0e7490"/>
+    <text class="branch-text" x="560" y="345">功能模块</text>
+    <g>
+      <rect class="leaf-node" x="760" y="278" width="340" height="40" stroke="#67e8f9"/>
+      <text class="leaf-text" x="772" y="303">认证与权限：JWT / BCrypt / RBAC 三角色</text>
+      <path class="link" stroke="#67e8f9" d="M 640 325 C 700 325, 700 298, 760 298"/>
+      <rect class="leaf-node" x="760" y="326" width="340" height="40" stroke="#67e8f9"/>
+      <text class="leaf-text" x="772" y="351">知识管理：CRUD / 发布下架 / 分类 / 浏览量</text>
+      <path class="link" stroke="#67e8f9" d="M 640 335 C 700 335, 700 346, 760 346"/>
+      <rect class="leaf-node" x="760" y="374" width="340" height="40" stroke="#67e8f9"/>
+      <text class="leaf-text" x="772" y="399">问答管理：提问 / 回答 / 状态 open→answered</text>
+      <path class="link" stroke="#67e8f9" d="M 640 345 C 700 345, 700 394, 760 394"/>
+      <rect class="leaf-node" x="760" y="422" width="340" height="40" stroke="#67e8f9"/>
+      <text class="leaf-text" x="772" y="447">用户管理：CRUD / 角色分配 / 启停用 / 删除保护</text>
+      <path class="link" stroke="#67e8f9" d="M 640 355 C 700 355, 700 442, 760 442"/>
+    </g>
+    <g>
+      <rect class="leaf-node" x="1140" y="278" width="340" height="40" stroke="#67e8f9"/>
+      <text class="leaf-text" x="1152" y="303">分类管理：树形结构 / 预置 5 类</text>
+      <path class="link" stroke="#67e8f9" d="M 1100 298 C 1120 298, 1120 298, 1140 298"/>
+      <rect class="leaf-node" x="1140" y="326" width="340" height="40" stroke="#67e8f9"/>
+      <text class="leaf-text" x="1152" y="351">统计看板：知识 / 问答 / 用户运营指标</text>
+      <path class="link" stroke="#67e8f9" d="M 1100 346 C 1120 346, 1120 346, 1140 346"/>
+      <rect class="leaf-node" x="1140" y="374" width="340" height="40" stroke="#67e8f9"/>
+      <text class="leaf-text" x="1152" y="399">审计日志：操作人 / 动作 / 详情 / 时间</text>
+      <path class="link" stroke="#67e8f9" d="M 1100 394 C 1120 394, 1120 394, 1140 394"/>
+      <rect class="leaf-node" x="1140" y="422" width="340" height="40" stroke="#67e8f9"/>
+      <text class="leaf-text" x="1152" y="447">健康检查：GET /api/health 可用性探测</text>
+      <path class="link" stroke="#67e8f9" d="M 1100 442 C 1120 442, 1120 442, 1140 442"/>
+    </g>
+
+    <!-- 分支3：用户角色 -->
+    <path class="link" stroke="#059669" d="M 280 560 C 380 560, 380 560, 480 560"/>
+    <rect class="branch-node" x="480" y="532" width="160" height="56" fill="#059669" stroke="#047857"/>
+    <text class="branch-text" x="560" y="565">用户角色</text>
+    <g>
+      <rect class="leaf-node" x="760" y="500" width="340" height="44" stroke="#6ee7b7"/>
+      <text class="leaf-text" x="772" y="527">超级管理员 super_admin：系统全部功能权限</text>
+      <path class="link" stroke="#6ee7b7" d="M 640 545 C 700 545, 700 522, 760 522"/>
+      <rect class="leaf-node" x="760" y="554" width="340" height="44" stroke="#6ee7b7"/>
+      <text class="leaf-text" x="772" y="581">管理员 admin：知识/分类/问答/统计/审计</text>
+      <path class="link" stroke="#6ee7b7" d="M 640 560 C 700 560, 700 576, 760 576"/>
+      <rect class="leaf-node" x="760" y="608" width="340" height="44" stroke="#6ee7b7"/>
+      <text class="leaf-text" x="772" y="635">普通用户 user：浏览/搜索知识、提交提问</text>
+      <path class="link" stroke="#6ee7b7" d="M 640 575 C 700 575, 700 630, 760 630"/>
+    </g>
+
+    <!-- 分支4：数据模型 -->
+    <path class="link" stroke="#d97706" d="M 280 570 C 380 570, 380 780, 480 780"/>
+    <rect class="branch-node" x="480" y="752" width="160" height="56" fill="#d97706" stroke="#b45309"/>
+    <text class="branch-text" x="560" y="785">数据模型</text>
+    <g>
+      <rect class="leaf-node" x="760" y="718" width="340" height="40" stroke="#fcd34d"/>
+      <text class="leaf-text" x="772" y="743">users（用户表）/ roles（角色表）</text>
+      <path class="link" stroke="#fcd34d" d="M 640 765 C 700 765, 700 738, 760 738"/>
+      <rect class="leaf-node" x="760" y="766" width="340" height="40" stroke="#fcd34d"/>
+      <text class="leaf-text" x="772" y="791">categories（分类表）</text>
+      <path class="link" stroke="#fcd34d" d="M 640 775 C 700 775, 700 786, 760 786"/>
+      <rect class="leaf-node" x="760" y="814" width="340" height="40" stroke="#fcd34d"/>
+      <text class="leaf-text" x="772" y="839">knowledge_items（知识条目表）</text>
+      <path class="link" stroke="#fcd34d" d="M 640 785 C 700 785, 700 834, 760 834"/>
+      <rect class="leaf-node" x="760" y="862" width="340" height="40" stroke="#fcd34d"/>
+      <text class="leaf-text" x="772" y="887">questions（问题表）/ answers（回答表）</text>
+      <path class="link" stroke="#fcd34d" d="M 640 795 C 700 795, 700 882, 760 882"/>
+    </g>
+    <g>
+      <rect class="leaf-node" x="1140" y="766" width="340" height="40" stroke="#fcd34d"/>
+      <text class="leaf-text" x="1152" y="791">audit_logs（审计日志表）</text>
+      <path class="link" stroke="#fcd34d" d="M 1100 786 C 1120 786, 1120 786, 1140 786"/>
+      <rect class="leaf-node" x="1140" y="814" width="340" height="40" stroke="#fcd34d"/>
+      <text class="leaf-text" x="1152" y="839">共 7 张表 · InnoDB · utf8mb4 · 外键齐全</text>
+      <path class="link" stroke="#fcd34d" d="M 1100 834 C 1120 834, 1120 834, 1140 834"/>
+    </g>
+
+    <!-- 分支5：非功能需求 -->
+    <path class="link" stroke="#dc2626" d="M 280 580 C 380 580, 380 1000, 480 1000"/>
+    <rect class="branch-node" x="480" y="972" width="160" height="56" fill="#dc2626" stroke="#b91c1c"/>
+    <text class="branch-text" x="560" y="1005">非功能需求</text>
+    <g>
+      <rect class="leaf-node" x="760" y="938" width="340" height="40" stroke="#fca5a5"/>
+      <text class="leaf-text" x="772" y="963">安全性：BCrypt / JWT HS256 / CORS 白名单</text>
+      <path class="link" stroke="#fca5a5" d="M 640 985 C 700 985, 700 958, 760 958"/>
+      <rect class="leaf-node" x="760" y="986" width="340" height="40" stroke="#fca5a5"/>
+      <text class="leaf-text" x="772" y="1011">安全性：SQL 参数化 / 审计留痕 / 401·403</text>
+      <path class="link" stroke="#fca5a5" d="M 640 995 C 700 995, 700 1006, 760 1006"/>
+      <rect class="leaf-node" x="760" y="1034" width="340" height="40" stroke="#fca5a5"/>
+      <text class="leaf-text" x="772" y="1059">性能：分页 limit/offset / 索引 / 无状态</text>
+      <path class="link" stroke="#fca5a5" d="M 640 1005 C 700 1005, 700 1054, 760 1054"/>
+      <rect class="leaf-node" x="760" y="1082" width="340" height="40" stroke="#fca5a5"/>
+      <text class="leaf-text" x="772" y="1107">可维护性：分层架构 / 环境变量 / 幂等建表</text>
+      <path class="link" stroke="#fca5a5" d="M 640 1015 C 700 1015, 700 1102, 760 1102"/>
+    </g>
+
+  </svg>
+</div>
+</body>
+</html>

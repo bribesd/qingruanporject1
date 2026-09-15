@@ -53,12 +53,22 @@ public class CategoryService {
         if (name.isEmpty()) {
             throw new ApiException(400, "分类名称不能为空");
         }
+        List<Map<String, Object>> targets = jdbcTemplate.queryForList(
+                "SELECT id FROM categories WHERE id = ?", id);
+        if (targets.isEmpty()) {
+            throw new ApiException(404, "分类不存在");
+        }
         jdbcTemplate.update("UPDATE categories SET name = ? WHERE id = ?", name, id);
         auditLogger.log(currentUser.id(), "update_category", "更新分类 ID " + id);
     }
 
     @Transactional
     public void delete(long id, AuthUser currentUser) {
+        List<Map<String, Object>> targets = jdbcTemplate.queryForList(
+                "SELECT id FROM categories WHERE id = ?", id);
+        if (targets.isEmpty()) {
+            throw new ApiException(404, "分类不存在");
+        }
         try {
             // 事务级联：解除子分类与知识条目的引用后再删除分类
             jdbcTemplate.update("UPDATE categories SET parent_id = NULL WHERE parent_id = ?", id);

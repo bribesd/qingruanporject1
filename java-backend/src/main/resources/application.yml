@@ -1,0 +1,48 @@
+server:
+  port: 3001
+
+spring:
+  datasource:
+    # 给DB_URL默认值，自动建库enterprise_kb
+    url: ${DB_URL:jdbc:mysql://localhost:3306/enterprise_kb?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&useSSL=true&createDatabaseIfNotExist=true}
+    username: ${DB_USERNAME:root}
+    password: ${DB_PASSWORD:123456}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  sql:
+    init:
+      mode: ${DB_INIT_MODE:never}
+      schema-locations: classpath:sql/schema.sql
+  mvc:
+    throw-exception-if-no-handler-found: true
+  web:
+    resources:
+      add-mappings: false
+
+app:
+  jwt:
+    # 默认密钥，满足HS256长度要求
+    secret: ${JWT_SECRET:abc123456789abc123456789abc123456789abc123456789abc123456789}
+    expiration-days: 7
+  bootstrap:
+    enabled: ${APP_BOOTSTRAP_ENABLED:false}
+    admin-username: ${APP_INITIAL_ADMIN_USERNAME:admin}
+    admin-password: ${APP_INITIAL_ADMIN_PASSWORD:admin123} # 默认初始管理员密码
+  cors:
+    origins: http://localhost:5173,http://127.0.0.1:5173,http://localhost:5174,http://127.0.0.1:5174
+  ai:
+    # 启动时重建全量向量索引（补偿降级存储重启丢失、保持向量方案一致性）
+    reindex-on-startup: true
+    embedding:
+      # Sentence-BERT HTTP 服务地址（兼容 TEI / Infinity / 自建 FastAPI）
+      base-url: ${SBERT_API_URL:http://localhost:8001}
+      model: ${SBERT_MODEL:sentence-bert}
+    vector-store:
+      # Chroma 向量数据库 REST 地址
+      base-url: ${CHROMA_URL:http://localhost:8000}
+      collection: enterprise_kb
+    qa:
+      top-k: 5
+      # 可选：配置后用 OpenAI 兼容接口基于召回内容生成回答，留空则返回检索片段
+      llm-base-url: ${LLM_API_URL:}
+      llm-model: ${LLM_MODEL:}
+      llm-api-key: ${LLM_API_KEY:}

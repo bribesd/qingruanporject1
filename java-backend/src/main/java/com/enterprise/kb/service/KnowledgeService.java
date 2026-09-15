@@ -1,5 +1,6 @@
 package com.enterprise.kb.service;
 
+import com.enterprise.kb.ai.SearchService;
 import com.enterprise.kb.exception.ApiException;
 import com.enterprise.kb.security.AuthUser;
 import com.enterprise.kb.util.AuditLogger;
@@ -19,10 +20,12 @@ public class KnowledgeService {
 
     private final JdbcTemplate jdbcTemplate;
     private final AuditLogger auditLogger;
+    private final SearchService searchService;
 
-    public KnowledgeService(JdbcTemplate jdbcTemplate, AuditLogger auditLogger) {
+    public KnowledgeService(JdbcTemplate jdbcTemplate, AuditLogger auditLogger, SearchService searchService) {
         this.jdbcTemplate = jdbcTemplate;
         this.auditLogger = auditLogger;
+        this.searchService = searchService;
     }
 
     public long count() {
@@ -67,7 +70,18 @@ public class KnowledgeService {
                 "INSERT INTO knowledge_items (title, content, category_id, author_id, status) VALUES (?, ?, ?, ?, ?)",
                 title, content, categoryId, currentUser.id(), status);
 
+        searchService.indexKnowledge(id, title, categoryId, content);
         auditLogger.log(currentUser.id(), "create_knowledge", "创建知识 " + title);
+        return id;
+    }
+
+    /** 从上传文档创建知识：文档已解析为纯文本，创建后立即建立向量索引 */
+    public long createFromDocument(String title, Long categoryId, String status, String content, AuthUser currentUser) {
+        long id = Jdbc.insertReturningKey(jdbcTemplate,
+                "INSERT INTO knowledge_items (title, content, category_id, author_id, status) VALUES (?, ?, ?, ?, ?)",
+                title, content, categoryId, currentUser.id(), status);
+        searchService.indexKnowledge(id, title, categoryId, content);
+        auditLogger.log(currentUser.id(), "create_knowledge", "上传文档 " + title);
         return id;
     }
 
@@ -80,14 +94,27 @@ public class KnowledgeService {
         Long categoryId = Str.jsLong(body.get("categoryId"));
         String status = body.get("status") == null ? "draft" : String.valueOf(body.get("status"));
 
+        List<Map<String, Object>> targets = jdbcTemplate.queryForList(
+                "SELECT id FROM knowledge_items WHERE id = ?", id);
+        if (targets.isEmpty()) {
+            throw new ApiException(404, "知识不存在");
+        }
+
         jdbcTemplate.update(
                 "UPDATE knowledge_items SET title = ?, content = ?, category_id = ?, status = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?",
                 title, content, categoryId, status, id);
 
+        searchService.indexKnowledge(id, title, categoryId, content);
         auditLogger.log(currentUser.id(), "update_knowledge", "更新知识 ID " + id);
     }
 
     public void delete(long id, AuthUser currentUser) {
+        List<Map<String, Object>> targets = jdbcTemplate.queryForList(
+                "SELECT id FROM knowledge_items WHERE id = ?", id);
+        if (targets.isEmpty()) {
+            throw new ApiException(404, "知识不存在");
+        }
+        searchService.removeKnowledge(id);
         jdbcTemplate.update("DELETE FROM knowledge_items WHERE id = ?", id);
         auditLogger.log(currentUser.id(), "delete_knowledge", "删除知识 ID " + id);
     }

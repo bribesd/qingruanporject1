@@ -1,6 +1,8 @@
 package com.enterprise.kb.security;
 
 import io.jsonwebtoken.Claims;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -20,10 +22,13 @@ import java.util.Map;
 @Component
 public class JwtAuthFilter extends OncePerRequestFilter {
 
+    private static final Logger log = LoggerFactory.getLogger(JwtAuthFilter.class);
+
     // 受保护的路由前缀（与 server.js 中挂载的受保护路由一致）
     private static final List<String> PROTECTED_PREFIXES = List.of(
             "/api/dashboard", "/api/roles", "/api/users", "/api/categories",
-            "/api/knowledge", "/api/questions", "/api/audit-logs");
+            "/api/knowledge", "/api/questions", "/api/audit-logs",
+            "/api/search", "/api/qa");
 
     private final JwtUtil jwtUtil;
     private final JdbcTemplate jdbcTemplate;
@@ -87,6 +92,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             }
         } catch (Exception e) {
             UserContext.clear();
+            log.warn("JWT 认证失败: {}", e.getMessage());
             writeError(response, 401, "令牌无效或已过期");
         }
     }

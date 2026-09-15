@@ -77,6 +77,11 @@ public class QuestionService {
         if (content.isEmpty()) {
             throw new ApiException(400, "回答内容不能为空");
         }
+        Integer questionExists = jdbcTemplate.queryForObject(
+                "SELECT COUNT(*) FROM questions WHERE id = ?", Integer.class, questionId);
+        if (questionExists == null || questionExists == 0) {
+            throw new ApiException(404, "问题不存在");
+        }
         long id = Jdbc.insertReturningKey(jdbcTemplate,
                 "INSERT INTO answers (question_id, user_id, content) VALUES (?, ?, ?)",
                 questionId, currentUser.id(), content);
@@ -93,6 +98,11 @@ public class QuestionService {
         }
         if (!VALID_STATUS.contains(status)) {
             throw new ApiException(400, "无效的问题状态");
+        }
+        Integer exists = jdbcTemplate.queryForObject(
+                "SELECT COUNT(*) FROM questions WHERE id = ?", Integer.class, id);
+        if (exists == null || exists == 0) {
+            throw new ApiException(404, "问题不存在");
         }
         jdbcTemplate.update("UPDATE questions SET status = ? WHERE id = ?", status, id);
         auditLogger.log(currentUser.id(), "update_question_status", "更新问题状态 ID " + id + " -> " + status);
